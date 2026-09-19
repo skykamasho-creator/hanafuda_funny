@@ -2,290 +2,331 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>まどろみ花札 - Madoromi Hanafuda</title>
   <style>
-    /* 全体スタイリング：ぎょふ海苔カラー＆夜山・枯山水の和モダン */
     :root {
-      --color-noridark: #121c17;   /* 深いぎょふ海苔色 */
-      --color-norimedium: #1e2d26; /* 枯山水・庭石の深緑 */
-      --color-tatami: #2a3a31;     /* 畳・卓のシックなグリーン */
-      --color-moon: #f3ebce;       /* 柔らかい月光色 */
-      --color-accent: #c47d86;     /* ほんのり淡い桜色 */
-      --color-text: #e0e6e2;       /* 目に優しい文字色 */
-      --color-card-bg: #f9f6f0;    /* 札の素地（和紙色） */
+      --color-noridark: #101914;
+      --color-norimedium: #1a2820;
+      --color-moon: #f3ebce;
+      --color-text: #e0e6e2;
+      --color-card-bg: #fdfbf7;
     }
 
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
-    }
-
-    body {
       margin: 0;
       padding: 0;
-      width: 100vw;
-      height: 100vh;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       background-color: var(--color-noridark);
       color: var(--color-text);
       font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
-    /* 枯山水・稜線と月が浮かぶ静かな背景 */
+    /* 背景：枯山水・月 */
     .sanctuary-bg {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 80% 20%, rgba(243, 235, 206, 0.12) 0%, transparent 40%),
-                  linear-gradient(to bottom, #0d1511 0%, var(--color-noridark) 100%);
+      inset: 0;
+      background: radial-gradient(circle at 85% 15%, rgba(243, 235, 206, 0.15) 0%, transparent 45%),
+                  linear-gradient(to bottom, #0a110d 0%, var(--color-noridark) 100%);
       z-index: 0;
     }
 
-    /* 遠くの山の稜線シルエット */
     .mountain-line {
       position: absolute;
       bottom: 0;
       width: 100%;
-      height: 35vh;
-      background: rgba(15, 24, 20, 0.6);
-      clip-path: polygon(0% 100%, 0% 60%, 15% 50%, 30% 65%, 50% 40%, 70% 60%, 85% 45%, 100% 55%, 100% 100%);
+      height: 25vh;
+      background: rgba(12, 20, 16, 0.7);
+      clip-path: polygon(0% 100%, 0% 50%, 20% 40%, 40% 60%, 65% 35%, 85% 55%, 100% 45%, 100% 100%);
       pointer-events: none;
     }
 
-    /* 淡く輝く月 */
     .moon {
       position: absolute;
-      top: 10%;
-      right: 15%;
-      width: 70px;
-      height: 70px;
+      top: 20px;
+      right: 25px;
+      width: 44px;
+      height: 44px;
       background-color: var(--color-moon);
       border-radius: 50%;
-      box-shadow: 0 0 35px rgba(243, 235, 206, 0.25);
+      box-shadow: 0 0 25px rgba(243, 235, 206, 0.3);
       opacity: 0.85;
       pointer-events: none;
-      animation: floatMoon 8s ease-in-out infinite alternate;
     }
 
-    @keyframes floatMoon {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-6px); }
-    }
-
-    /* メインコンテナ（横画面レイアウト） */
-    .game-container {
+    /* アプリ全体系（レスポンシブ・コンテナ） */
+    .app-viewport {
       position: relative;
       z-index: 1;
-      width: 92vw;
-      height: 88vh;
-      display: grid;
-      grid-template-columns: 180px 1fr 180px;
-      grid-template-rows: 1fr 1.2fr 1fr;
-      gap: 12px;
-      padding: 16px;
-      background: rgba(30, 45, 38, 0.4);
-      backdrop-filter: blur(8px);
-      border-radius: 20px;
-      border: 1px solid rgba(243, 235, 206, 0.08);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-
-    /* 情報パネル（左右） */
-    .side-panel {
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 12px;
-      background: rgba(18, 28, 23, 0.5);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      letter-spacing: 0.1em;
+      padding: 12px 16px 16px 16px;
     }
 
-    .zen-title {
-      font-size: 1.1rem;
+    /* ヘッダーエリア */
+    .app-header {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 40px;
+    }
+
+    .title-text {
+      font-size: 1.0rem;
       color: var(--color-moon);
-      opacity: 0.8;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      margin-top: 10px;
+      letter-spacing: 0.15em;
+      opacity: 0.9;
     }
 
-    /* フィールド（場札・手札）エリア */
-    .field-area {
-      grid-column: 2;
-      grid-row: 1 / span 3;
+    .header-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: rgba(243, 235, 206, 0.08);
+      border: 1px solid rgba(243, 235, 206, 0.2);
+      color: var(--color-moon);
+      padding: 6px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* プレイエリア（縦並び配置） */
+    .play-board {
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: space-around;
       align-items: center;
-      padding: 10px 0;
+      background: rgba(26, 40, 32, 0.45);
+      border: 1px solid rgba(243, 235, 206, 0.08);
+      border-radius: 16px;
+      padding: 8px;
+      margin: 6px 0;
+      backdrop-filter: blur(8px);
+    }
+
+    .card-row-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .row-label {
+      font-size: 0.65rem;
+      opacity: 0.5;
+      letter-spacing: 0.1em;
+      margin-bottom: 2px;
     }
 
     .card-row {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       width: 100%;
-      min-height: 110px;
+      flex-wrap: nowrap;
     }
 
-    /* 花札（カード）の基本デザイン */
+    /* 花札カードサイズ（レスポンシブ最適化） */
     .card {
-      width: 64px;
-      height: 100px;
+      width: min(13vw, 54px);
+      height: min(20vw, 84px);
       background-color: var(--color-card-bg);
-      border-radius: 8px;
-      border: 2px solid #2d261e;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border-radius: 6px;
+      border: 1.5px solid #2d261e;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 4px;
+      padding: 4px 2px;
       cursor: pointer;
-      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-      position: relative;
-    }
-
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 8px 20px rgba(243, 235, 206, 0.15);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      flex-shrink: 0;
     }
 
     .card.selected {
       border-color: var(--color-moon);
-      box-shadow: 0 0 15px rgba(243, 235, 206, 0.4);
-      transform: translateY(-12px);
+      box-shadow: 0 0 12px rgba(243, 235, 206, 0.6);
+      transform: translateY(-8px);
     }
 
     .card.matched-hint {
-      animation: gentlePulse 2.5s infinite alternate;
+      animation: gentlePulse 2s infinite alternate;
     }
 
     @keyframes gentlePulse {
-      0% { box-shadow: 0 0 4px rgba(243, 235, 206, 0.2); }
-      100% { box-shadow: 0 0 16px rgba(243, 235, 206, 0.6); }
+      0% { box-shadow: 0 0 2px rgba(243, 235, 206, 0.2); }
+      100% { box-shadow: 0 0 12px rgba(243, 235, 206, 0.7); }
     }
 
-    /* 札の和風イラスト表現（シンプル＆キュート） */
     .card-month {
-      font-size: 0.7rem;
-      color: #7a6e65;
+      font-size: 0.6rem;
+      color: #6e635a;
     }
 
     .card-symbol {
-      font-size: 1.8rem;
+      font-size: min(5vw, 1.4rem);
+      line-height: 1;
     }
 
     .card-name {
-      font-size: 0.65rem;
+      font-size: 0.55rem;
       color: #3a332c;
     }
 
-    /* おやすみ演出メッセージ */
+    /* フッター／ガイドテキスト */
+    .app-footer {
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .sleep-message {
-      position: absolute;
-      bottom: 25px;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       color: var(--color-moon);
-      opacity: 0.6;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      transition: opacity 1s ease;
+      opacity: 0.75;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* ボタン類 */
-    .soft-btn {
-      background: rgba(243, 235, 206, 0.08);
-      border: 1px solid rgba(243, 235, 206, 0.2);
+    /* 横画面時の自動レイアウト調整（メディアクエリ） */
+    @media (min-aspect-ratio: 1/1) {
+      .card {
+        width: min(8vh, 56px);
+        height: min(13vh, 88px);
+      }
+      .play-board {
+        padding: 4px 12px;
+      }
+    }
+
+    /* カメラモーダル（ダミーUI） */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 10;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .camera-frame {
+      width: 260px;
+      height: 180px;
+      border: 2px dashed var(--color-moon);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       color: var(--color-moon);
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-family: inherit;
       font-size: 0.8rem;
-      transition: all 0.3s ease;
-    }
-
-    .soft-btn:hover {
-      background: rgba(243, 235, 206, 0.18);
+      margin-bottom: 20px;
+      text-align: center;
+      padding: 10px;
     }
   </style>
 </head>
 <body>
 
-  <!-- 枯山水・夜山の背景 -->
   <div class="sanctuary-bg"></div>
   <div class="mountain-line"></div>
   <div class="moon"></div>
 
-  <!-- ゲームメインフレーム（横画面） -->
-  <div class="game-container">
+  <div class="app-viewport">
     
-    <!-- 左パネル：世界観テキスト -->
-    <div class="side-panel">
-      <div class="zen-title">夜山に月すむ</div>
-      <button class="soft-btn" onclick="toggleAudio()">音のしずく</button>
-    </div>
-
-    <!-- 中央：フィールド -->
-    <div class="field-area">
-      <!-- 相手（CPU・まどろみ）手札 -->
-      <div class="card-row" id="cpu-hand">
-        <!-- JSで生成 -->
-      </div>
-
-      <!-- 場札（枯山水の上） -->
-      <div class="card-row" id="field-cards">
-        <!-- JSで生成 -->
-      </div>
-
-      <!-- プレイヤー手札 -->
-      <div class="card-row" id="player-hand">
-        <!-- JSで生成 -->
+    <!-- ヘッダーバー -->
+    <div class="app-header">
+      <div class="title-text">夜山に月すむ</div>
+      <div class="header-controls">
+        <!-- さりげないカメラ読み込みボタン -->
+        <button class="icon-btn" onclick="openCamera()">📷 札読み込み</button>
+        <button class="icon-btn" onclick="resetGame()">最初から</button>
       </div>
     </div>
 
-    <!-- 右パネル：状態・おやすみガイド -->
-    <div class="side-panel">
-      <div style="text-align: center; margin-top: 10px;">
-        <div style="font-size: 0.75rem; opacity: 0.6;">現在の揃い</div>
-        <div id="yaku-count" style="font-size: 1.2rem; color: var(--color-moon); margin-top: 4px;">〇 札</div>
+    <!-- ゲームボード -->
+    <div class="play-board">
+      <!-- 相手の手札 -->
+      <div class="card-row-wrapper">
+        <div class="row-label">相手の手</div>
+        <div class="card-row" id="cpu-hand"></div>
       </div>
-      <button class="soft-btn" onclick="resetGame()">最初から</button>
+
+      <!-- 場札 -->
+      <div class="card-row-wrapper">
+        <div class="row-label">場札</div>
+        <div class="card-row" id="field-cards"></div>
+      </div>
+
+      <!-- 自分の手札 -->
+      <div class="card-row-wrapper">
+        <div class="row-label">自分の手</div>
+        <div class="card-row" id="player-hand"></div>
+      </div>
     </div>
 
-    <!-- 画面下の静かなメッセージ -->
-    <div class="sleep-message" id="sleep-msg">札をふわりと、合わせてみましょう</div>
+    <!-- フッター（おやすみメッセージ＆スコア） -->
+    <div class="app-footer">
+      <div class="sleep-message" id="sleep-msg">札をふわりと、合わせてみましょう</div>
+    </div>
+
+  </div>
+
+  <!-- カメラ読み込みのプレビュー画面（モーダル） -->
+  <div class="camera-modal" id="camera-modal">
+    <div class="camera-frame">実物の札をここに映すと<br>自動で読み込みます</div>
+    <button class="icon-btn" onclick="closeCamera()">閉じる</button>
   </div>
 
   <script>
-    // シンプルな花札データ（プロトタイプ用一部抜粋）
     const sampleCards = [
-      { id: 1, month: '一月', name: '松', symbol: '🌲', color: '#3d5a45' },
-      { id: 2, month: '一月', name: '鶴', symbol: '🕊️', color: '#c47d86' },
-      { id: 3, month: '二月', name: '梅', symbol: '🌸', color: '#d98880' },
-      { id: 4, month: '二月', name: '鶯', symbol: '🐤', color: '#7d9d70' },
-      { id: 5, month: '三月', name: '桜', symbol: '🌸', color: '#f2b5d4' },
-      { id: 6, month: '三月', name: '幕', symbol: '🍶', color: '#8e6b88' },
-      { id: 7, month: '八月', name: 'ススキ', symbol: '🌾', color: '#d0b884' },
-      { id: 8, month: '八月', name: '月', symbol: '🌕', color: '#f3ebce' },
+      { id: 1, month: '一月', name: '松', symbol: '🌲' },
+      { id: 2, month: '一月', name: '鶴', symbol: '🕊️' },
+      { id: 3, month: '二月', name: '梅', symbol: '🌸' },
+      { id: 4, month: '二月', name: '鶯', symbol: '🐤' },
+      { id: 5, month: '三月', name: '桜', symbol: '🌸' },
+      { id: 6, month: '三月', name: '幕', symbol: '🍶' },
+      { id: 7, month: '八月', name: 'ススキ', symbol: '🌾' },
+      { id: 8, month: '八月', name: '月', symbol: '🌕' },
     ];
 
     let selectedHandCard = null;
     let matchedCount = 0;
 
-    // 初期化処理
     function initGame() {
       const fieldEl = document.getElementById('field-cards');
       const playerEl = document.getElementById('player-hand');
@@ -295,29 +336,26 @@
       playerEl.innerHTML = '';
       cpuEl.innerHTML = '';
 
-      // 場札の配置 (4枚)
-      const fieldCards = [sampleCards[0], sampleCards[2], sampleCards[4], sampleCards[6]];
-      fieldCards.forEach(card => {
+      // 場札 4枚
+      [sampleCards[0], sampleCards[2], sampleCards[4], sampleCards[6]].forEach(card => {
         fieldEl.appendChild(createCardElement(card, 'field'));
       });
 
-      // プレイヤー手札の配置 (4枚)
-      const playerCards = [sampleCards[1], sampleCards[3], sampleCards[5], sampleCards[7]];
-      playerCards.forEach(card => {
+      // プレイヤー手札 4枚
+      [sampleCards[1], sampleCards[3], sampleCards[5], sampleCards[7]].forEach(card => {
         playerEl.appendChild(createCardElement(card, 'player'));
       });
 
-      // CPU手札（裏面風）
+      // CPU手札 4枚（裏面）
       for(let i=0; i<4; i++) {
         const backCard = document.createElement('div');
         backCard.className = 'card';
         backCard.style.backgroundColor = 'var(--color-norimedium)';
-        backCard.style.borderColor = 'rgba(243, 235, 206, 0.1)';
+        backCard.style.borderColor = 'rgba(243, 235, 206, 0.15)';
         cpuEl.appendChild(backCard);
       }
     }
 
-    // カードHTML要素の作成
     function createCardElement(cardData, type) {
       const card = document.createElement('div');
       card.className = 'card';
@@ -334,17 +372,14 @@
       return card;
     }
 
-    // タップ時の優しく静かな挙動
     function handleCardClick(cardEl, cardData, type) {
       const msgEl = document.getElementById('sleep-msg');
 
       if (type === 'player') {
-        // 自分の手札を選択
         document.querySelectorAll('#player-hand .card').forEach(c => c.classList.remove('selected'));
         cardEl.classList.add('selected');
         selectedHandCard = cardData;
 
-        // 場札の中で月が合うものをふんわり光らせる
         document.querySelectorAll('#field-cards .card').forEach(fCard => {
           if (fCard.dataset.month === cardData.month) {
             fCard.classList.add('matched-hint');
@@ -353,30 +388,21 @@
           }
         });
 
-        msgEl.style.opacity = '0.8';
-        msgEl.textContent = `${cardData.month}の札ですね。合わせる場札をえらびましょう`;
+        msgEl.textContent = `${cardData.month}の札ですね。合わせる場札を選びましょう`;
       } 
       else if (type === 'field' && selectedHandCard) {
-        // 場札と合わせる処理
         if (cardEl.dataset.month === selectedHandCard.month) {
-          // 合わせ成功（ふわっと消えてポイント加算）
           cardEl.style.opacity = '0';
-          cardEl.style.transform = 'scale(0.8)';
-          
           const playerSelectedEl = document.querySelector('#player-hand .card.selected');
-          if (playerSelectedEl) {
-            playerSelectedEl.style.opacity = '0';
-            playerSelectedEl.style.transform = 'scale(0.8)';
-          }
+          if (playerSelectedEl) playerSelectedEl.style.opacity = '0';
 
           setTimeout(() => {
             cardEl.remove();
             if (playerSelectedEl) playerSelectedEl.remove();
             matchedCount += 2;
-            document.getElementById('yaku-count').textContent = `${matchedCount} 札`;
-          }, 500);
+            msgEl.textContent = `ぽんと、静かに揃いました（現在 ${matchedCount} 札）`;
+          }, 300);
 
-          msgEl.textContent = 'ぽんと、静かに揃いました';
           selectedHandCard = null;
         } else {
           msgEl.textContent = '月が異なるようです。ゆっくり選び直しましょう';
@@ -384,21 +410,20 @@
       }
     }
 
-    // サウンド（ダミー切り替え）
-    function toggleAudio() {
-      const msgEl = document.getElementById('sleep-msg');
-      msgEl.textContent = '（静かな波と風の音が心に響きます…）';
+    function openCamera() {
+      document.getElementById('camera-modal').style.display = 'flex';
     }
 
-    // リセット
+    function closeCamera() {
+      document.getElementById('camera-modal').style.display = 'none';
+    }
+
     function resetGame() {
       matchedCount = 0;
-      document.getElementById('yaku-count').textContent = '〇 札';
       document.getElementById('sleep-msg').textContent = '札をふわりと、合わせてみましょう';
       initGame();
     }
 
-    // 起動時スタート
     window.onload = initGame;
   </script>
 </body>
