@@ -62,7 +62,7 @@
       pointer-events: none;
     }
 
-    /* アプリ全体系（レスポンシブ・コンテナ） */
+    /* 全体ビューポート */
     .app-viewport {
       position: relative;
       z-index: 1;
@@ -75,7 +75,7 @@
       padding: 12px 16px 16px 16px;
     }
 
-    /* ヘッダーエリア */
+    /* ヘッダー */
     .app-header {
       width: 100%;
       max-width: 800px;
@@ -94,14 +94,14 @@
 
     .header-controls {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
 
     .icon-btn {
       background: rgba(243, 235, 206, 0.08);
       border: 1px solid rgba(243, 235, 206, 0.2);
       color: var(--color-moon);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 16px;
       cursor: pointer;
       font-size: 0.75rem;
@@ -111,7 +111,7 @@
       backdrop-filter: blur(4px);
     }
 
-    /* プレイエリア（縦並び配置） */
+    /* ゲームボード */
     .play-board {
       flex: 1;
       width: 100%;
@@ -149,9 +149,10 @@
       gap: 8px;
       width: 100%;
       flex-wrap: nowrap;
+      min-height: min(20vw, 84px);
     }
 
-    /* 花札カードサイズ（レスポンシブ最適化） */
+    /* 花札カード本体 */
     .card {
       width: min(13vw, 54px);
       height: min(20vw, 84px);
@@ -167,26 +168,38 @@
       cursor: pointer;
       transition: transform 0.25s ease, box-shadow 0.25s ease;
       flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
     }
 
     .card.selected {
       border-color: var(--color-moon);
-      box-shadow: 0 0 12px rgba(243, 235, 206, 0.6);
+      box-shadow: 0 0 14px rgba(243, 235, 206, 0.7);
       transform: translateY(-8px);
     }
 
     .card.matched-hint {
-      animation: gentlePulse 2s infinite alternate;
+      animation: gentlePulse 1.8s infinite alternate;
     }
 
     @keyframes gentlePulse {
       0% { box-shadow: 0 0 2px rgba(243, 235, 206, 0.2); }
-      100% { box-shadow: 0 0 12px rgba(243, 235, 206, 0.7); }
+      100% { box-shadow: 0 0 14px rgba(243, 235, 206, 0.8); }
     }
 
+    /* デザインテーマ別のカード装飾 */
     .card-month {
-      font-size: 0.6rem;
+      font-size: 0.55rem;
       color: #6e635a;
+      z-index: 1;
+    }
+
+    .card-visual {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
     }
 
     .card-symbol {
@@ -194,44 +207,60 @@
       line-height: 1;
     }
 
+    .card-svg {
+      width: 100%;
+      height: 100%;
+      max-height: 48px;
+    }
+
     .card-name {
       font-size: 0.55rem;
       color: #3a332c;
+      z-index: 1;
     }
 
-    /* フッター／ガイドテキスト */
+    /* フッター */
     .app-footer {
       width: 100%;
       max-width: 800px;
       text-align: center;
-      height: 32px;
+      height: 36px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+      padding: 0 8px;
     }
 
     .sleep-message {
       font-size: 0.75rem;
       color: var(--color-moon);
-      opacity: 0.75;
-      letter-spacing: 0.1em;
+      opacity: 0.85;
+      letter-spacing: 0.08em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* 横画面時の自動レイアウト調整（メディアクエリ） */
+    .score-badge {
+      font-size: 0.75rem;
+      color: var(--color-moon);
+      background: rgba(243, 235, 206, 0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(243, 235, 206, 0.15);
+    }
+
     @media (min-aspect-ratio: 1/1) {
       .card {
         width: min(8vh, 56px);
         height: min(13vh, 88px);
       }
-      .play-board {
-        padding: 4px 12px;
+      .card-row {
+        min-height: min(13vh, 88px);
       }
     }
 
-    /* カメラモーダル（ダミーUI） */
+    /* モーダル */
     .camera-modal {
       display: none;
       position: fixed;
@@ -268,66 +297,96 @@
 
   <div class="app-viewport">
     
-    <!-- ヘッダーバー -->
     <div class="app-header">
       <div class="title-text">夜山に月すむ</div>
       <div class="header-controls">
-        <!-- さりげないカメラ読み込みボタン -->
-        <button class="icon-btn" onclick="openCamera()">📷 札読み込み</button>
-        <button class="icon-btn" onclick="resetGame()">最初から</button>
+        <button class="icon-btn" onclick="toggleDesign()">🎨 <span id="design-name">夜山(限定)</span></button>
+        <button class="icon-btn" onclick="openCamera()">📷 読み込み</button>
+        <button class="icon-btn" onclick="initGame()">最初から</button>
       </div>
     </div>
 
-    <!-- ゲームボード -->
     <div class="play-board">
-      <!-- 相手の手札 -->
       <div class="card-row-wrapper">
         <div class="row-label">相手の手</div>
         <div class="card-row" id="cpu-hand"></div>
       </div>
 
-      <!-- 場札 -->
       <div class="card-row-wrapper">
         <div class="row-label">場札</div>
         <div class="card-row" id="field-cards"></div>
       </div>
 
-      <!-- 自分の手札 -->
       <div class="card-row-wrapper">
         <div class="row-label">自分の手</div>
         <div class="card-row" id="player-hand"></div>
       </div>
     </div>
 
-    <!-- フッター（おやすみメッセージ＆スコア） -->
     <div class="app-footer">
-      <div class="sleep-message" id="sleep-msg">札をふわりと、合わせてみましょう</div>
+      <div class="sleep-message" id="sleep-msg">手札を選んで、場札と合わせましょう</div>
+      <div class="score-badge" id="score-text">あなた: 0 / 相手: 0</div>
     </div>
 
   </div>
 
-  <!-- カメラ読み込みのプレビュー画面（モーダル） -->
   <div class="camera-modal" id="camera-modal">
     <div class="camera-frame">実物の札をここに映すと<br>自動で読み込みます</div>
     <button class="icon-btn" onclick="closeCamera()">閉じる</button>
   </div>
 
   <script>
-    const sampleCards = [
-      { id: 1, month: '一月', name: '松', symbol: '🌲' },
-      { id: 2, month: '一月', name: '鶴', symbol: '🕊️' },
-      { id: 3, month: '二月', name: '梅', symbol: '🌸' },
-      { id: 4, month: '二月', name: '鶯', symbol: '🐤' },
-      { id: 5, month: '三月', name: '桜', symbol: '🌸' },
-      { id: 6, month: '三月', name: '幕', symbol: '🍶' },
-      { id: 7, month: '八月', name: 'ススキ', symbol: '🌾' },
-      { id: 8, month: '八月', name: '月', symbol: '🌕' },
+    const allCards = [
+      { id: 1, month: '一月', symbol: '🌲', name: '松', type: 'pine' },
+      { id: 2, month: '一月', symbol: '🕊️', name: '鶴', type: 'crane' },
+      { id: 3, month: '二月', symbol: '🌸', name: '梅', type: 'plum' },
+      { id: 4, month: '二月', symbol: '🐤', name: '鶯', type: 'bird' },
+      { id: 5, month: '三月', symbol: '🌸', name: '桜', type: 'cherry' },
+      { id: 6, month: '三月', symbol: '🍶', name: '幕', type: 'sake' },
+      { id: 7, month: '四月', symbol: '🌿', name: '藤', type: 'wisteria' },
+      { id: 8, month: '四月', symbol: '🐦', name: 'ホトトギス', type: 'cuckoo' },
+      { id: 9, month: '八月', symbol: '🌾', name: '芒', type: 'pampas' },
+      { id: 10, month: '八月', symbol: '🌕', name: '月', type: 'moon' },
     ];
 
+    const designs = [
+      { id: 'original', name: '夜山(限定)' },
+      { id: 'emoji', name: '絵文字' },
+      { id: 'simple', name: '伝統風' }
+    ];
+    let currentDesignIndex = 0;
+
+    let deck = [];
+    let playerHand = [];
+    let cpuHand = [];
+    let fieldCards = [];
+    let playerScore = 0;
+    let cpuScore = 0;
     let selectedHandCard = null;
-    let matchedCount = 0;
+    let isPlayerTurn = true;
 
     function initGame() {
+      deck = [...allCards].sort(() => Math.random() - 0.5);
+      playerHand = deck.splice(0, 4);
+      cpuHand = deck.splice(0, 4);
+      fieldCards = deck.splice(0, 4);
+      playerScore = 0;
+      cpuScore = 0;
+      selectedHandCard = null;
+      isPlayerTurn = true;
+
+      updateScoreDisplay();
+      setMsg("手札を選んで、場札と合わせましょう");
+      renderBoard();
+    }
+
+    function toggleDesign() {
+      currentDesignIndex = (currentDesignIndex + 1) % designs.length;
+      document.getElementById('design-name').textContent = designs[currentDesignIndex].name;
+      renderBoard();
+    }
+
+    function renderBoard() {
       const fieldEl = document.getElementById('field-cards');
       const playerEl = document.getElementById('player-hand');
       const cpuEl = document.getElementById('cpu-hand');
@@ -336,93 +395,205 @@
       playerEl.innerHTML = '';
       cpuEl.innerHTML = '';
 
-      // 場札 4枚
-      [sampleCards[0], sampleCards[2], sampleCards[4], sampleCards[6]].forEach(card => {
-        fieldEl.appendChild(createCardElement(card, 'field'));
+      fieldCards.forEach(card => {
+        const cardEl = createCardElement(card, 'field');
+        if (selectedHandCard && card.month === selectedHandCard.month) {
+          cardEl.classList.add('matched-hint');
+        }
+        fieldEl.appendChild(cardEl);
       });
 
-      // プレイヤー手札 4枚
-      [sampleCards[1], sampleCards[3], sampleCards[5], sampleCards[7]].forEach(card => {
-        playerEl.appendChild(createCardElement(card, 'player'));
+      playerHand.forEach(card => {
+        const cardEl = createCardElement(card, 'player');
+        if (selectedHandCard && card.id === selectedHandCard.id) {
+          cardEl.classList.add('selected');
+        }
+        playerEl.appendChild(cardEl);
       });
 
-      // CPU手札 4枚（裏面）
-      for(let i=0; i<4; i++) {
+      cpuHand.forEach(() => {
         const backCard = document.createElement('div');
         backCard.className = 'card';
         backCard.style.backgroundColor = 'var(--color-norimedium)';
         backCard.style.borderColor = 'rgba(243, 235, 206, 0.15)';
         cpuEl.appendChild(backCard);
-      }
+      });
     }
 
     function createCardElement(cardData, type) {
       const card = document.createElement('div');
       card.className = 'card';
-      card.dataset.id = cardData.id;
-      card.dataset.month = cardData.month;
+
+      const designMode = designs[currentDesignIndex].id;
+      let visualContent = '';
+
+      if (designMode === 'emoji') {
+        visualContent = `<span class="card-symbol">${cardData.symbol}</span>`;
+      } else if (designMode === 'original') {
+        visualContent = getOriginalSVG(cardData.type);
+      } else {
+        visualContent = `<div style="font-weight:bold; color:#8b0000; font-size:0.9rem;">${cardData.month}</div>`;
+      }
 
       card.innerHTML = `
         <span class="card-month">${cardData.month}</span>
-        <span class="card-symbol">${cardData.symbol}</span>
+        <div class="card-visual">${visualContent}</div>
         <span class="card-name">${cardData.name}</span>
       `;
 
-      card.addEventListener('click', () => handleCardClick(card, cardData, type));
+      card.addEventListener('click', () => onCardClick(cardData, type));
       return card;
     }
 
-    function handleCardClick(cardEl, cardData, type) {
-      const msgEl = document.getElementById('sleep-msg');
-
-      if (type === 'player') {
-        document.querySelectorAll('#player-hand .card').forEach(c => c.classList.remove('selected'));
-        cardEl.classList.add('selected');
-        selectedHandCard = cardData;
-
-        document.querySelectorAll('#field-cards .card').forEach(fCard => {
-          if (fCard.dataset.month === cardData.month) {
-            fCard.classList.add('matched-hint');
-          } else {
-            fCard.classList.remove('matched-hint');
-          }
-        });
-
-        msgEl.textContent = `${cardData.month}の札ですね。合わせる場札を選びましょう`;
-      } 
-      else if (type === 'field' && selectedHandCard) {
-        if (cardEl.dataset.month === selectedHandCard.month) {
-          cardEl.style.opacity = '0';
-          const playerSelectedEl = document.querySelector('#player-hand .card.selected');
-          if (playerSelectedEl) playerSelectedEl.style.opacity = '0';
-
-          setTimeout(() => {
-            cardEl.remove();
-            if (playerSelectedEl) playerSelectedEl.remove();
-            matchedCount += 2;
-            msgEl.textContent = `ぽんと、静かに揃いました（現在 ${matchedCount} 札）`;
-          }, 300);
-
-          selectedHandCard = null;
-        } else {
-          msgEl.textContent = '月が異なるようです。ゆっくり選び直しましょう';
-        }
+    // オリジナルイラスト（SVGグラフィック）生成
+    function getOriginalSVG(type) {
+      switch(type) {
+        case 'moon':
+          return `<svg class="card-svg" viewBox="0 0 40 50">
+                    <rect width="40" height="50" fill="#0d1b2a"/>
+                    <circle cx="20" cy="18" r="10" fill="#f3ebce"/>
+                    <path d="M0,50 Q20,35 40,50 Z" fill="#1a2820"/>
+                  </svg>`;
+        case 'pine':
+          return `<svg class="card-svg" viewBox="0 0 40 50">
+                    <rect width="40" height="50" fill="#faf8f5"/>
+                    <polygon points="20,10 10,28 30,28" fill="#1b4332"/>
+                    <polygon points="20,20 8,40 32,40" fill="#081c15"/>
+                    <rect x="18" y="40" width="4" height="8" fill="#5c3d2e"/>
+                  </svg>`;
+        case 'cherry':
+          return `<svg class="card-svg" viewBox="0 0 40 50">
+                    <rect width="40" height="50" fill="#faf8f5"/>
+                    <circle cx="15" cy="20" r="6" fill="#ffb703"/>
+                    <circle cx="25" cy="28" r="7" fill="#ffb703"/>
+                    <circle cx="20" cy="15" r="5" fill="#e76f51"/>
+                  </svg>`;
+        default:
+          return `<svg class="card-svg" viewBox="0 0 40 50">
+                    <rect width="40" height="50" fill="#faf8f5"/>
+                    <circle cx="20" cy="25" r="12" fill="#2a3a31" opacity="0.15"/>
+                    <text x="20" y="29" text-anchor="middle" font-size="12" fill="#2a3a31">🎴</text>
+                  </svg>`;
       }
     }
 
-    function openCamera() {
-      document.getElementById('camera-modal').style.display = 'flex';
+    function onCardClick(cardData, type) {
+      if (!isPlayerTurn) return;
+
+      if (type === 'player') {
+        selectedHandCard = cardData;
+        const hasMatch = fieldCards.some(f => f.month === cardData.month);
+        setMsg(hasMatch ? `${cardData.month}の場札をタップして合わせましょう` : "同月の場札がありません。場に出す札をタップしてください");
+        renderBoard();
+      } 
+      else if (type === 'field' && selectedHandCard) {
+        processPlayerTurn(cardData);
+      }
     }
 
-    function closeCamera() {
-      document.getElementById('camera-modal').style.display = 'none';
+    function processPlayerTurn(targetFieldCard) {
+      isPlayerTurn = false;
+      const handIndex = playerHand.findIndex(c => c.id === selectedHandCard.id);
+      playerHand.splice(handIndex, 1);
+
+      if (targetFieldCard.month === selectedHandCard.month) {
+        fieldCards = fieldCards.filter(c => c.id !== targetFieldCard.id);
+        playerScore += 2;
+        setMsg(`ぽんと、${selectedHandCard.month}の札が揃いました`);
+      } else {
+        fieldCards.push(selectedHandCard);
+        setMsg(`${selectedHandCard.month}の札を場に出しました`);
+      }
+
+      selectedHandCard = null;
+      updateScoreDisplay();
+      renderBoard();
+
+      setTimeout(() => { drawFromDeck('player'); }, 1000);
     }
 
-    function resetGame() {
-      matchedCount = 0;
-      document.getElementById('sleep-msg').textContent = '札をふわりと、合わせてみましょう';
-      initGame();
+    function drawFromDeck(who) {
+      if (deck.length === 0) { checkGameOver(); return; }
+
+      const drawnCard = deck.pop();
+      const matchIndex = fieldCards.findIndex(c => c.month === drawnCard.month);
+
+      if (matchIndex !== -1) {
+        fieldCards.splice(matchIndex, 1);
+        if (who === 'player') playerScore += 2;
+        else cpuScore += 2;
+        setMsg(`山札から【${drawnCard.month}】を引いて揃いました`);
+      } else {
+        fieldCards.push(drawnCard);
+        setMsg(`山札から【${drawnCard.month}】が出ました`);
+      }
+
+      updateScoreDisplay();
+      renderBoard();
+
+      if (who === 'player') {
+        setTimeout(processCpuTurn, 1400);
+      } else {
+        isPlayerTurn = true;
+        if (playerHand.length === 0) checkGameOver();
+        else setMsg("あなたの番です。手札を選びましょう");
+      }
     }
+
+    function processCpuTurn() {
+      setMsg("相手（おやすみCPU）が考え中…");
+
+      setTimeout(() => {
+        if (cpuHand.length === 0) { checkGameOver(); return; }
+
+        let playIndex = 0;
+        let matchFieldIndex = -1;
+
+        for (let i = 0; i < cpuHand.length; i++) {
+          const fIdx = fieldCards.findIndex(f => f.month === cpuHand[i].month);
+          if (fIdx !== -1) {
+            playIndex = i;
+            matchFieldIndex = fIdx;
+            break;
+          }
+        }
+
+        const cpuCard = cpuHand.splice(playIndex, 1)[0];
+
+        if (matchFieldIndex !== -1) {
+          fieldCards.splice(matchFieldIndex, 1);
+          cpuScore += 2;
+          setMsg(`相手が${cpuCard.month}の札を合わせました`);
+        } else {
+          fieldCards.push(cpuCard);
+          setMsg(`相手が${cpuCard.month}の札を場に出しました`);
+        }
+
+        updateScoreDisplay();
+        renderBoard();
+
+        setTimeout(() => { drawFromDeck('cpu'); }, 1200);
+      }, 1000);
+    }
+
+    function checkGameOver() {
+      if (playerHand.length === 0 && cpuHand.length === 0) {
+        let result = playerScore > cpuScore ? "あなたの勝ちです。穏やかな良い夢を…" :
+                     cpuScore > playerScore ? "相手の勝ちです。またゆっくり遊びましょう" : "引き分けです。静かな夜が更けていきます";
+        setMsg(`一局終了: ${result}`);
+      }
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById('score-text').textContent = `あなた: ${playerScore} / 相手: ${cpuScore}`;
+    }
+
+    function setMsg(txt) {
+      document.getElementById('sleep-msg').textContent = txt;
+    }
+
+    function openCamera() { document.getElementById('camera-modal').style.display = 'flex'; }
+    function closeCamera() { document.getElementById('camera-modal').style.display = 'none'; }
 
     window.onload = initGame;
   </script>
